@@ -1,0 +1,6 @@
+*~
+*.class
+.DS_Store
+build/*
+Ascensor.jar
+/dist/
