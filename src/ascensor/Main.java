@@ -250,7 +250,7 @@ public class Main {
      /* rutina de llegada pasajero al edificio */
      public void llegada_pasajero()
      {    
-         //System.out.println("     LLEGADA PASAJERO clock: " + clock);
+         System.out.println("     LLEGADA PASAJERO clock: " + clock);
          /* determino piso al que irá el pasajero */
          int piso_destino_pasajero = determinar_piso(0);
 
@@ -270,7 +270,7 @@ public class Main {
             //mostrar_botonera(internas, "INTERNA");
            
            
-            //System.out.println(" PASAJERO SUBE - genera salida_ascensor t: " + event_list.getS() + " PISO DESTINO: " + piso_destino_pasajero+" clock:"  + clock);
+            System.out.println(" PASAJERO SUBE - genera salida_ascensor t: " + event_list.getS() + " PISO DESTINO: " + piso_destino_pasajero+" clock:"  + clock);
 
          }else{ // el ascensor está en otro piso o se acaba de ir
              
@@ -289,8 +289,8 @@ public class Main {
          /* se genera el tiempo de llegada del pasajero al edificio */
          event_list.setA(clock + GA());
          
-         //System.out.println(" proxima llegada_pasajero t: " + event_list.getA()  + " number_delayed: "  + number_delayed);
-         //System.out.println(" ///////////////////////////////////////");
+         System.out.println(" proxima llegada_pasajero t: " + event_list.getA()  + " number_delayed: "  + number_delayed);
+         System.out.println(" ///////////////////////////////////////");
      }
     
      /* rutina de llegada ascensor a la planta */
@@ -518,7 +518,7 @@ public class Main {
          if (piso_destino == piso_actual ){
            System.out.println(" salida_ascensor - ME QUEDO EN ESTA PLANTA ");
            /* !!! si nadie me llama me quedo en la planta, pero cuando vuelvo a comprobar que alguien me llama? */
-           event_list.setS(clock + 1);
+           event_list.setS((float) (clock + 0.4));
            
         }else{
           /* actualizamos el estado del ascensor para que nadie más entre */
@@ -561,10 +561,39 @@ public class Main {
              return p;//no hay llamadas en los pisos siguientes
          }
      }
+     public ArrayList llamadas_pisos = new ArrayList<>();
+     public boolean sig_piso_min_max(int p, int b[])
+     {
+
+         int i = p;
+         boolean salir = false;
+         while (i < MAX_PISOS){
+             if (b[i] == 1){
+                 llamadas_pisos.add(i);
+                 salir = true;
+             }
+             i++;
+         }
+       return salir;
+     }
+     public boolean ant_piso_min_max(int p, int b[])
+     {
+
+         int i = p;
+         boolean salir = false;
+         while (i >= 0){
+             if (b[i] == 1){
+                 llamadas_pisos.add(i);
+                 salir = true;
+             }
+             --i;
+         }
+       return salir;
+     }
      
      public int sig_piso(int p, int b[])
      {
-         int i = p;
+         int i = p+1;
          boolean salir = false;
          
          while (i < MAX_PISOS && !salir){
@@ -576,6 +605,17 @@ public class Main {
          }else{
              return p;//no hay llamadas en los pisos siguientes
          }
+     }
+     public boolean hay_sig_piso(int p, int b[])
+     {
+         int i = p+1;
+         boolean salir = false;
+         
+         while (i < MAX_PISOS && !salir){
+             if (b[i] == 1) salir = true;
+             i++;
+         }
+         return salir;
      }
      public int ant_piso_cualquier_llamada(int p)
      {
@@ -603,11 +643,23 @@ public class Main {
              return p;//no hay llamadas en los pisos siguientes, devolvemoms la misma planta
          }
      }
-     public int ant_piso(int p, int b[])
+     public boolean hay_ant_piso(int p, int b[])
      {
-         int i = p;
+         int i = p-1;
          boolean salir = false;
          while (i >= 0 && !salir){
+              
+             if (b[i] == 1) salir = true;
+             --i;
+         }
+         return salir;
+     }
+     public int ant_piso(int p, int b[])
+     {
+         int i = p-1;
+         boolean salir = false;
+         while (i >= 0 && !salir){
+              
              if (b[i] == 1) salir = true;
              --i;
          }
@@ -669,19 +721,90 @@ public class Main {
          if (!hay_llamadas_internas()){
                      
             /* si hay llamadas en pisos siguientes EN la misma direccion y con la misma direccion */
-                   
+            /*
+		} else if (estado  && (sig(subida) || sig(bajada))) {
+			sube();
+		} else if (!estado  && (pre(bajada) || pre(subida))) {
+			baja();			
+		} else if (!estado  && (sig(bajada) || sig(subida))) {
+			sube();
+		} else if (estado  && (pre(subida) || pre(bajada))) {
+			baja();
+             */
+             
+            if (ascensor.getDireccion().equals("ASC") && (hay_sig_piso(piso_actual,subidas) || hay_sig_piso(piso_actual,bajadas))){
+                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%1");
+                if (hay_sig_piso(piso_actual,subidas)){
+                    next = sig_piso(piso_actual,subidas);
+                }else{
+                    next = sig_piso(piso_actual,bajadas);
+                }
+            }else if (ascensor.getDireccion().equals("DESC") && (hay_ant_piso(piso_actual,subidas) || hay_ant_piso(piso_actual,bajadas))){
+               System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%2");
+                if (hay_ant_piso(piso_actual,bajadas)){
+                    next = ant_piso(piso_actual,bajadas);
+                }else{
+                    next = ant_piso(piso_actual,subidas);
+                } 
+            }else if(ascensor.getDireccion().equals("DESC") && (hay_sig_piso(piso_actual,subidas) || hay_sig_piso(piso_actual,bajadas))){
+                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%3");
+                if (hay_sig_piso(piso_actual,subidas)){
+                    next = sig_piso(piso_actual,bajadas);
+                }else{
+                    next = sig_piso(piso_actual,subidas);
+                }
+            }else if(ascensor.getDireccion().equals("ASC") && (hay_ant_piso(piso_actual,subidas) || hay_ant_piso(piso_actual,bajadas))){
+                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%4");
+                if (hay_ant_piso(piso_actual,bajadas)){
+                    next = ant_piso(piso_actual,bajadas);
+                    ascensor.setDireccion("DESC");
+                }else{
+                    next = ant_piso(piso_actual,subidas);
+                } 
+                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%% "+ next);
+            }
+         
            
-            int sig = sig_piso(piso_actual,subidas);
+            /*
+            for (int j = 0; j < llamadas_pisos.size(); j++)
+            {
+                System.out.println(" HAY LLAMDAS DE SUBIDA EN LOS PISOS: " +llamadas_pisos.get(j));
+            }
+            llamadas_pisos.clear();
+            sig_piso_min_max(piso_actual,bajadas);
+            int sig_piso_mas_cercano_bajada =  (int) Collections.max(llamadas_pisos);
+            System.out.println(" MAX BAJADAS: " + sig_piso_mas_cercano_subida);
+            for (int j = 0; j < llamadas_pisos.size(); j++)
+            {
+                System.out.println(" HAY LLAMADAS DE BAJADA EN LOS PISOS: " +llamadas_pisos.get(j));
+            }
+            llamadas_pisos.clear();
+           /* 
+            if (ascensor.getDireccion().equals("ASC")){
+                if (llamadas_pisos.size() > 0){
+                    System.out.println("HAY LLAMADAS DE SUBIDAS EN PISOS SUPERIORES Y EL ASCENSOR VA HACIA ARRIBA TAMBIEN");
+                }else if( ){
+                    
+                }
+                
+            }
+        */
             
+            //System.out.println("sig_suben: " + sig_suben + " sig_bajan: "+ sig_bajan+ " MIN: "+ min);
+            /*int sig = sig_piso(piso_actual,subidas);
             if ( sig != piso_actual){      
                 next = sig;
+                 
             }else{   // si hay llamadas en pisos anteriores e           
                 int ant = ant_piso(piso_actual,bajadas);
+                next = ant;
+                
                 if (ant != piso_actual){
                     next = ant;
+              
                 }
-            }
-            
+            }*/
+    
          }else{
             /* si hay llamadas internas, miramos si entre el viaje hasta el destino del pasajero del ascensor
              * hay otro pasajero con la misma dirección, en algun piso por el que debemos pasar 
@@ -706,9 +829,9 @@ public class Main {
                 if (b == piso_actual) b = a;
                 next = Math.max(a,b);
             }
-            actualizarDireccion(next);
+          
          }
-         
+           actualizarDireccion(next);
          return next;
           
      }
@@ -824,39 +947,43 @@ public class Main {
      {
          inicializar();
         llegada_pasajero();
+        salida_ascensor();
+        llegada_ascensor();
+        salida_ascensor();
         llegada_pasajero();
+        salida_ascensor();
+        llegada_ascensor();
+        salida_ascensor();
+        fin_reflexion();
+        llegada_pasajero();
+        llegada_ascensor();
+        salida_ascensor();
+        llegada_ascensor();
+        salida_ascensor();
+        fin_reflexion();
+        llegada_pasajero();
+        llegada_ascensor();
+        salida_ascensor();
+        llegada_pasajero();
+        llegada_pasajero();
+        llegada_pasajero();
+        llegada_ascensor();
         salida_ascensor();
         llegada_pasajero();
         llegada_ascensor();
         fin_reflexion();
-        llegada_pasajero();
-        salida_ascensor();
-        llegada_pasajero();
-        llegada_pasajero();
-        llegada_ascensor();
-        llegada_pasajero();
-        fin_reflexion();
-        salida_ascensor();
-        llegada_pasajero();
-        llegada_pasajero();
-        llegada_ascensor();
-        salida_ascensor();
-        llegada_pasajero();
-        llegada_pasajero();
-        llegada_ascensor();
-        llegada_pasajero();
         salida_ascensor();
         llegada_ascensor();
-        llegada_pasajero();
+        salida_ascensor();
 
      }
      public static void main(String[] args) {
 
         // TODO code application logic here         ¡
          Main m = new Main();
-         //m.test();
+         m.test();
         // m.prueba();
-         m.principal();
+        //m.principal();
         // m.inicializar();
          //m.prueba();
 
