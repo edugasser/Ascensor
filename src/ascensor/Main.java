@@ -90,9 +90,9 @@ public class Main {
      /* generar piso diferente al actual al que irá el pasajero */
      public int determinar_piso(int p)
      {
-        int r = randomInterval(1,MAX_PISOS-1);
+        int r = randomInterval(1,MAX_PISOS);
         while (p == r){
-         r = randomInterval(1,MAX_PISOS-1);  
+         r = randomInterval(1,MAX_PISOS);  
         }
         return r;
      }
@@ -120,9 +120,9 @@ public class Main {
         GNA g = new GNA();
         
         if ( g.rand2(SEMILLA) < 0.6 ){
-            resultado = randomInterval(1,MAX_PISOS-1);
+            resultado = randomInterval(1,MAX_PISOS);
             while (resultado == p){
-                resultado = randomInterval(1,MAX_PISOS-1);
+                resultado = randomInterval(1,MAX_PISOS);
             }
         }
        return resultado;
@@ -491,6 +491,7 @@ public class Main {
          if (piso_actual == 0) ascensor.setDireccion("ASC");
          if (piso_actual == MAX_PISOS-1) ascensor.setDireccion("DESC");
      }
+     
      public void actualizarDireccion(int actual, int destino){
          if (actual < destino)
          {
@@ -533,62 +534,6 @@ public class Main {
          
          System.out.println(" llegada_ascensor t: " + event_list.getL() + " number_delayed: "  + number_delayed);
          System.out.println(" ///////////////////////////////////////");
-     }
-     
-     public int sig_piso_cualquier_llamada(int p)
-     {
-         /* miramos si en los pisos siguientes hay alguna llamada
-          * da igual si es para bajar o subir
-          * si la hay, actualizamos la direccion del ascensor dependiendo
-          * de la dirección del pasajero que está esperando
-          */
-         int i = p+1;
-         boolean salir = false;
-         
-         while (i < MAX_PISOS && !salir){
-             if (subidas[i] == 1){
-                 salir = true;
-                 ascensor.setDireccion("ASC");
-             }else if(bajadas[i] == 1){
-                 salir = true;
-                 ascensor.setDireccion("DESC");
-             }
-             i++;
-         }
-         if (salir){
-             return --i;
-         }else{
-             return p;//no hay llamadas en los pisos siguientes
-         }
-     }
-     public ArrayList llamadas_pisos = new ArrayList<>();
-     public boolean sig_piso_min_max(int p, int b[])
-     {
-
-         int i = p;
-         boolean salir = false;
-         while (i < MAX_PISOS){
-             if (b[i] == 1){
-                 llamadas_pisos.add(i);
-                 salir = true;
-             }
-             i++;
-         }
-       return salir;
-     }
-     public boolean ant_piso_min_max(int p, int b[])
-     {
-
-         int i = p;
-         boolean salir = false;
-         while (i >= 0){
-             if (b[i] == 1){
-                 llamadas_pisos.add(i);
-                 salir = true;
-             }
-             --i;
-         }
-       return salir;
      }
      
      public int sig_piso(int p, int b[])
@@ -669,22 +614,7 @@ public class Main {
              return p;//no hay llamadas en los pisos siguientes, devolvemoms la misma planta
          }
      }
-     public int piso_mas_cercano(int b[]){
-        
-         int mas_cercano = INFINITO; 
-         int dif_aux=20;
-         
-         for (int i=0; i<MAX_PISOS;i++)
-         { 
-             if (b[i] == 1){
-                 if (dif_aux > Math.abs(piso_actual - i) ){
-                     dif_aux = Math.abs(piso_actual - i);
-                     mas_cercano = i;
-                 }
-             }
-         }
-         return mas_cercano;
-     }
+
      public boolean hay_llamadas_internas(){
          int i = 0;
          boolean salir = false;
@@ -704,15 +634,7 @@ public class Main {
      /* obtenemos la siguiente parada dependiendo si hay peticiones en otras plantas */
      public int proxima_parada()
      {
-         /*CASOS:
-          * que no haya ninguna llamada interna (nadie en el ascensor)
-          *    y en caso de que haya llamadas en otros pisos, vamos al piso más cerca
-          *    sino nos quedamos en el mismo piso
-          * que haya llamadas internas
-          *     vamos al piso más cercano de todos los que hay en el ascensor
-          *     y si pasamos por un piso que hay un pasajero que quiere ir
-          *     en la misma dirección que el ascensor, lo recogemos. 
-          */
+         
          int i = piso_actual;
          int a;
          int b;
@@ -766,46 +688,6 @@ public class Main {
                 next = piso_actual;
             }
          
-           
-            /*
-            for (int j = 0; j < llamadas_pisos.size(); j++)
-            {
-                System.out.println(" HAY LLAMDAS DE SUBIDA EN LOS PISOS: " +llamadas_pisos.get(j));
-            }
-            llamadas_pisos.clear();
-            sig_piso_min_max(piso_actual,bajadas);
-            int sig_piso_mas_cercano_bajada =  (int) Collections.max(llamadas_pisos);
-            System.out.println(" MAX BAJADAS: " + sig_piso_mas_cercano_subida);
-            for (int j = 0; j < llamadas_pisos.size(); j++)
-            {
-                System.out.println(" HAY LLAMADAS DE BAJADA EN LOS PISOS: " +llamadas_pisos.get(j));
-            }
-            llamadas_pisos.clear();
-           /* 
-            if (ascensor.getDireccion().equals("ASC")){
-                if (llamadas_pisos.size() > 0){
-                    System.out.println("HAY LLAMADAS DE SUBIDAS EN PISOS SUPERIORES Y EL ASCENSOR VA HACIA ARRIBA TAMBIEN");
-                }else if( ){
-                    
-                }
-                
-            }
-        */
-            
-            //System.out.println("sig_suben: " + sig_suben + " sig_bajan: "+ sig_bajan+ " MIN: "+ min);
-            /*int sig = sig_piso(piso_actual,subidas);
-            if ( sig != piso_actual){      
-                next = sig;
-                 
-            }else{   // si hay llamadas en pisos anteriores e           
-                int ant = ant_piso(piso_actual,bajadas);
-                next = ant;
-                
-                if (ant != piso_actual){
-                    next = ant;
-              
-                }
-            }*/
     
          }else{
             /* si hay llamadas internas, miramos si entre el viaje hasta el destino del pasajero del ascensor
@@ -870,7 +752,7 @@ public class Main {
      public void principal()
      {    
          inicializar();
-         while (number_delayed < 100)
+         while (number_delayed < 250)
          {  
             temporizacion();
             
@@ -908,7 +790,7 @@ public class Main {
              System.out.println(orden.get(i));
          }
          System.out.println("area de espera acumulada: "+ area_under_q);
-         System.out.println("tiempo medio de espera acumulado: "+ area_under_q/(clock-time_of_last_arrival));
+         System.out.println("tiempo medio de espera acumulado: "+ area_under_q/100);
         // System.out.println("tiempo medio de espera acumulado: "+ area_under_q/clock);
          float b=0;
          for (int p = 0; p<tiempo_espera.size();p++){
@@ -941,7 +823,8 @@ public class Main {
            // System.out.println(determinar_piso(5));
            // System.out.println(poisson.sample());
           // System.out.println(Math.round(exp.sample()*1000));
-          // System.out.println(randomInterval(1,6));
+          //System.out.println(randomInterval(1,6));
+          System.out.println(determinarPisoProbabilidad(1));
            // System.out.println(GR());
 
         }
@@ -984,9 +867,9 @@ public class Main {
 
         // TODO code application logic here         ¡
          Main m = new Main();
-         m.test();
-        // m.prueba();
-        //m.principal();
+         //m.test();
+        //m.prueba();
+        m.principal();
         // m.inicializar();
          //m.prueba();
 
