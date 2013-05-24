@@ -731,7 +731,7 @@ public class Main {
 		} else if (estado  && (pre(subida) || pre(bajada))) {
 			baja();
              */
-             
+            System.out.println("NO HAY LLAMADAS INTERNTAS");
             if (ascensor.getDireccion().equals("ASC") && (hay_sig_piso(piso_actual,subidas) || hay_sig_piso(piso_actual,bajadas))){
                 System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%1");
                 if (hay_sig_piso(piso_actual,subidas)){
@@ -762,6 +762,8 @@ public class Main {
                     next = ant_piso(piso_actual,subidas);
                 } 
                 System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%% "+ next);
+            }else{
+                next = piso_actual;
             }
          
            
@@ -809,6 +811,7 @@ public class Main {
             /* si hay llamadas internas, miramos si entre el viaje hasta el destino del pasajero del ascensor
              * hay otro pasajero con la misma dirección, en algun piso por el que debemos pasar 
              */
+             System.out.println(" HAY LLAMADAS INTERNTAS");
             if (ascensor.getDireccion().equals("ASC"))
             {
 
