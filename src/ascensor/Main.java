@@ -43,9 +43,12 @@ public class Main {
     /* cola de pasajeros que quieren subir */
     private ArrayList<Cola> cola_bajada = new ArrayList<Cola>();
     
+    
+    
+    
     /* lista de personas en reflexion */
     private ArrayList<Pasajero> pasajeros_reflexion = new ArrayList<Pasajero>();;
-    
+    private GNA g = new GNA();
     private int piso_actual; // piso donde se encuentra el ascensor
     private int piso_destino; // piso destino del ascensor
 
@@ -56,8 +59,8 @@ public class Main {
     private static final int SEMILLA = 14;
     private static final int INFINITO = Integer.MAX_VALUE;
     private int K = 100; // número de clientes retardados
-    private double lambda = 0.016; // 1/60
-    private static final int TOTAL_TRAZAS = 200;
+    private double lambda = 0.1; // 1/60
+    private static final int TOTAL_TRAZAS = 1;
     private int traza = 0;
     private Ascensor ascensor = new Ascensor();    
     private Event_list event_list = new Event_list();
@@ -68,7 +71,7 @@ public class Main {
     private int[] total_delayed = new int[TOTAL_TRAZAS];
     private int[] number_delayed = new int[TOTAL_TRAZAS];
     private int[] mean_waiting_time = new int[TOTAL_TRAZAS];
-    private boolean calculo_transitorio = false;
+    private boolean calculo_grafico = false;
     
  
     
@@ -87,8 +90,8 @@ public class Main {
         event_list.setL(100000);
         event_list.setS(10000000);
         event_list.setR(100000000);
-        cola_subida.clear();
-        cola_bajada.clear();
+       // cola_subida.clear();
+        //cola_bajada.clear();
         pasajeros_reflexion.clear();
         piso_actual=0;
         piso_destino=0;
@@ -97,8 +100,8 @@ public class Main {
         transitorio = false;
         mean_waiting_time[traza]=0;
         for (int i = 0; i<MAX_PISOS; i++){
-            cola_subida.add(new Cola("ASC"));
-            cola_bajada.add(new Cola("DESC"));
+            cola_subida.get(i).clear();
+            cola_bajada.get(i).clear();
             internas[i] = 0;
             subidas[i]=0;
             bajadas[i]=0;
@@ -130,13 +133,13 @@ public class Main {
        return (int) weibull.sample();
     }
     private int randomInterval(int a, int b){
-        GNA g = new GNA();
+        
         // por transformada inversa
         double r = Math.ceil((b-a+1)*g.rand2(SEMILLA-4))+ a - 1;
         return (int)r;
     }
     private double randomIntervalDouble(int a, int b){
-        GNA g = new GNA();
+       
         // por transformada inversa
         double r =  ((b-a)*g.rand2(SEMILLA-4)+a);
         return r;
@@ -144,7 +147,7 @@ public class Main {
     private int determinarPisoProbabilidad(int p){
         int resultado = 0;
 
-        GNA g = new GNA();
+        
         
         if ( g.rand2(SEMILLA) < 0.6 ){
             resultado = randomInterval(1,MAX_PISOS-1);
@@ -277,7 +280,7 @@ public class Main {
      /* rutina de llegada pasajero al edificio */
      public void llegada_pasajero()
      {    
-        //System.out.println(clock);
+        System.out.println(clock);
          /* determino piso al que irá el pasajero */
          int piso_destino_pasajero = determinar_piso(0);
         
@@ -805,9 +808,9 @@ public class Main {
         double media = mean_of(mean_waiting_time); /* media de todas las trazas */
         double var = variance_of(mean_waiting_time,TOTAL_TRAZAS,media);
         double ic = 1.96 * Math.pow(var / TOTAL_TRAZAS, 0.5f);
-       System.out.println((int)media); 
-        System.out.println("var: " + var);
-        System.out.println("intervalo confianza: " + ic);
+       //System.out.println((int)media + " " + lambda); 
+        //System.out.println("var: " + var);
+        //System.out.println("intervalo confianza: " + ic);
      }
   public void traza()
      {    
@@ -831,32 +834,41 @@ public class Main {
          mean_waiting_time[traza] = total_delayed[traza]/K; 
          //System.out.println(mean_waiting_time[traza]); 
      }
+     public void inicializar_colas()
+     { 
+         for (int i = 0; i<MAX_PISOS; i++){
+            cola_subida.add(new Cola("ASC"));
+            cola_bajada.add(new Cola("DESC"));
+        }
+         
+     }
      public void principal() throws InterruptedException
      {
-     if (calculo_transitorio)
-     {
-        for (int j = 1; j <50; j++)
+        inicializar_colas();
+        if (calculo_grafico)
         {
-           traza = 0;
-           K = j;
+           for (int j = 1; j <50; j++)
+           {
+              traza = 0;
+              //K = j; para calculartransitorio
+              for (int i = 0; i< TOTAL_TRAZAS; i++)
+              {
+                  traza();
+                  traza++;      
+              }
+              procesar_resultados();
+              lambda += 0.01;
+
+
+           }
+        }else{
            for (int i = 0; i< TOTAL_TRAZAS; i++)
            {
                traza();
                traza++;      
            }
            procesar_resultados();
-           //lambda += 0.01;
         }
-     }else{
-         
-        for (int i = 0; i< TOTAL_TRAZAS; i++)
-        {
-            traza();
-            traza++;      
-        }
-        procesar_resultados();
-     }
-
      }
      public static void main(String[] args) throws InterruptedException {
 
