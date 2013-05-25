@@ -14,7 +14,6 @@ public class Ascensor {
 
     private String direccion;
     private int proxima_parada; // proxima parada del de los pasajeros. No tiene encuenta peticiones externas.
-    private boolean call; // Controla si ya se ha lanzado el evento de salida ascensor
     private boolean viajando;
     private ArrayList<Pasajero> suben;
     private ArrayList<Pasajero> bajan;
@@ -28,11 +27,17 @@ public class Ascensor {
         proxima_parada = 10;
         suben = new ArrayList<Pasajero>();
         bajan = new ArrayList<Pasajero>();
-        call = false;
+
         viajando = false;
 
     }
-
+    public void clear(){
+        this.direccion  = "ASC";
+        proxima_parada = 10;
+        suben.clear();
+        bajan.clear();
+        viajando = false;
+    }
     public void setViajando(boolean b) {
         viajando = b;
     }
