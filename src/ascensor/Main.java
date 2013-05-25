@@ -37,7 +37,7 @@ public class Main {
     
     private static final int MAX_PASAJEROS = 10; // ocupación total del ascensor
     private static final int MAX_PISOS = 5; // número de pisos edificio
-    private static final int K = 300; // número de clientes retardados
+
     
     /* cola de pasajeros que quieren subir*/
     private ArrayList<Cola> cola_subida = new ArrayList<Cola>();
@@ -56,7 +56,8 @@ public class Main {
     
     private static final int SEMILLA = 14;
     private static final int INFINITO = Integer.MAX_VALUE;
-    private static final int TOTAL_TRAZAS = 50;
+        private static final int K = 2000; // número de clientes retardados
+    private static final int TOTAL_TRAZAS = 100;
     private int traza = 0;
     private Ascensor ascensor = new Ascensor();    
     private Event_list event_list = new Event_list();
@@ -519,7 +520,7 @@ public class Main {
      {
          //System.out.println("     SALIDA ASCENSOR clock: " + clock + " direc:" + ascensor.getDireccion());
          
-         if (ascensor.getNumPasajeros() < MAX_PASAJEROS) aceptar_pasajeros();
+         if (ascensor.getNumPasajeros() <= MAX_PASAJEROS) aceptar_pasajeros();
          
          piso_destino = proxima_parada();
   
@@ -741,7 +742,7 @@ public class Main {
             }
            actualizarDireccion(next);
          }
-          
+         if (next == -1) next = piso_actual;
          return next;
           
      }
@@ -779,28 +780,27 @@ public class Main {
          inicializar_traza();
          while (number_delayed[traza] < K)
          {  
-            temporizacion();
-            ////System.out.println("clock "+ clock);
+            temporizacion();  
             if (clock == event_list.getA())
             {
-                orden.add("llegada_pasajero();");
+                //orden.add("llegada_pasajero();");
                 ordenclock.add(clock);
                 llegada_pasajero();
             
             }else if( clock == event_list.getL()){
                 
-                orden.add("llegada_ascensor();");
+                //orden.add("llegada_ascensor();");
                ordenclock.add(clock);
                 llegada_ascensor();
                 
             }else if (clock == event_list.getS()){
-                orden.add("salida_ascensor();");
+                //orden.add("salida_ascensor();");
                 ordenclock.add(clock);
                 
                 salida_ascensor();
                 
             }else{
-                orden.add("fin_reflexion();");
+                //orden.add("fin_reflexion();");
                ordenclock.add(clock);
                 fin_reflexion();
                 
@@ -810,6 +810,14 @@ public class Main {
          procesar_resultados();
          visualizar_resultados();
         
+     }
+     public int mean_of(int[] a){
+         int total=0;
+         for (int i =0; i< a.length; i++)
+         {
+             total += a[i];
+         }
+         return total/a.length;
      }
      public void procesar_resultados()
      {
@@ -822,7 +830,7 @@ public class Main {
          }*/
  
         //System.out.println("total delayed: " + total_delayed[traza]);
-        System.out.println( mean_waiting_time[traza]);
+        // //System.out.println( mean_waiting_time[traza]);
          
          
      }
@@ -831,40 +839,14 @@ public class Main {
          for (int i = 0; i< TOTAL_TRAZAS; i++)
          {
              traza();
-             //Thread.currentThread().sleep(5000);//sleep for 1000 ms:
+             System.out.println(+mean_waiting_time[traza]);
+            
              traza++;
              
          }
+         System.out.println("LA MEDIA TOTAL ES: "+mean_of(mean_waiting_time));
      }
-     public void prueba()
-     {
-         
-         ArrayList prueba = new ArrayList<>();
-         
-         prueba.add("cero");
-         prueba.add("uno");
-         prueba.add("dos");
-         prueba.add("tres");
-        weibull = new WeibullDistribution(2, 22);
-   
-       
-        ExponentialDistribution exp = new ExponentialDistribution(0.016);
-        for (int i = 0; i< 50;i++)
-        {
-   
-           // //System.out.println(determinarPisoProbabilidad(5) + "\n");
-           // //System.out.println(determinar_piso(5));
-           // //System.out.println(poisson.sample());
-          // //System.out.println(Math.round(exp.sample()*1000));
-          ////System.out.println(randomInterval(1,6));
-          ////System.out.println(determinarPisoProbabilidad(1));
-           //System.out.println(GA());
-           
-           ////System.out.println(GR());
 
-        }
-     }
-      
      public static void main(String[] args) throws InterruptedException {
 
         // TODO code application logic here         ¡
