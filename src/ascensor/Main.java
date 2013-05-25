@@ -8,10 +8,9 @@ import ascensor.GNA;
 import ascensor.Ascensor;
 import java.util.Collections;
 import java.util.ArrayList;
-import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.apache.commons.math3.distribution.PoissonDistribution;
+ 
 import org.apache.commons.math3.distribution.WeibullDistribution;
-
+import org.apache.commons.math3.stat.descriptive.moment.Variance;
 /**
  * Javadoc de las distribuciones de la libreria Apache Math
  * https://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/distribution/package-summary.html
@@ -56,18 +55,20 @@ public class Main {
     
     private static final int SEMILLA = 14;
     private static final int INFINITO = Integer.MAX_VALUE;
-        private static final int K = 2000; // número de clientes retardados
-    private static final int TOTAL_TRAZAS = 100;
+    private int K = 100; // número de clientes retardados
+    private double lambda = 0.016; // 1/60
+    private static final int TOTAL_TRAZAS = 200;
     private int traza = 0;
     private Ascensor ascensor = new Ascensor();    
     private Event_list event_list = new Event_list();
       
     private int clock;   
-    
+    private boolean transitorio = false;
+    private static final int cota_transitorio = 21;
     private int[] total_delayed = new int[TOTAL_TRAZAS];
     private int[] number_delayed = new int[TOTAL_TRAZAS];
     private int[] mean_waiting_time = new int[TOTAL_TRAZAS];
-    
+    private boolean calculo_transitorio = false;
     
  
     
@@ -81,7 +82,6 @@ public class Main {
     public void inicializar_traza()
     {
         clock = 0;
-        
         ascensor.clear();
         event_list.setA(GA());
         event_list.setL(100000);
@@ -90,10 +90,12 @@ public class Main {
         cola_subida.clear();
         cola_bajada.clear();
         pasajeros_reflexion.clear();
-    
         piso_actual=0;
         piso_destino=0;
-        
+        number_delayed[traza]=0;
+        total_delayed[traza]=0;
+        transitorio = false;
+        mean_waiting_time[traza]=0;
         for (int i = 0; i<MAX_PISOS; i++){
             cola_subida.add(new Cola("ASC"));
             cola_bajada.add(new Cola("DESC"));
@@ -104,19 +106,23 @@ public class Main {
     }
      /* generar piso diferente al actual al que irá el pasajero */
      public int determinar_piso(int p)
-     {
-        
-        int r = randomInterval(1,MAX_PISOS);
+     {      
+        int r = randomInterval(1,MAX_PISOS-1);
         while (p == r){
-         r = randomInterval(1,MAX_PISOS);  
+         r = randomInterval(1,MAX_PISOS-1);  
         }
+        
         return r;
      }
+     
     /* distribucion Poisson con lambda = 1/lambda para la llegada de pasajeros al edificio */
     private int GA()
     {
-        return  (int) (-Math.log(1- randomIntervalDouble(0,1)) / 0.016);
+        double d = randomIntervalDouble(0,1);
+        int r = (int) (-Math.log(1-d) / lambda);
+        return  r;
     }
+    
     /* distribucion Weibull para el tiempo de reflexión de los pasajeros */
     private int GR()
     {
@@ -126,12 +132,14 @@ public class Main {
     private int randomInterval(int a, int b){
         GNA g = new GNA();
         // por transformada inversa
-        return (int)((b-a)*g.rand2(SEMILLA-4)+a);
+        double r = Math.ceil((b-a+1)*g.rand2(SEMILLA-4))+ a - 1;
+        return (int)r;
     }
     private double randomIntervalDouble(int a, int b){
         GNA g = new GNA();
         // por transformada inversa
-        return ((b-a)*g.rand2(SEMILLA-4)+a);
+        double r =  ((b-a)*g.rand2(SEMILLA-4)+a);
+        return r;
     }
     private int determinarPisoProbabilidad(int p){
         int resultado = 0;
@@ -139,9 +147,9 @@ public class Main {
         GNA g = new GNA();
         
         if ( g.rand2(SEMILLA) < 0.6 ){
-            resultado = randomInterval(1,MAX_PISOS);
+            resultado = randomInterval(1,MAX_PISOS-1);
             while (resultado == p){
-                resultado = randomInterval(1,MAX_PISOS);
+                resultado = randomInterval(1,MAX_PISOS-1);
             }
         }
        return resultado;
@@ -269,10 +277,10 @@ public class Main {
      /* rutina de llegada pasajero al edificio */
      public void llegada_pasajero()
      {    
-        //System.out.println("     LLEGADA PASAJERO clock: " + clock);
+        //System.out.println(clock);
          /* determino piso al que irá el pasajero */
          int piso_destino_pasajero = determinar_piso(0);
-
+        
          /* si ascensor está en el piso actual y está en reposo */
          if (piso_actual == 0 && !ascensor.getViajando()){
              
@@ -459,12 +467,11 @@ public class Main {
          while (ascensor.getNumPasajeros() <= MAX_PASAJEROS && getColaActual().get(piso_actual).size()  > 0 )
          {
            /* si recogemos a pasajeros de la planta baja, calculamos el tiempo de espera de ese pasajero */
-            if (piso_actual==0){
+            if (piso_actual==0 && !transitorio){
                 getColaActual().get(piso_actual).frente().setFinEspera(clock);
                 total_delayed[traza] += clock - getColaActual().get(piso_actual).frente().getTiempoEntrada();
-                //System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$TOTAL DELAYED:" + total_delayed);
             }
-             
+           
             internas[getColaActual().get(piso_actual).frente().getPisoDestino()] = 1;
             ascensor.getPasajeros().add(getColaActual().get(piso_actual).frente());
             
@@ -775,43 +782,8 @@ public class Main {
          }
          
      }
-     public void traza()
-     {    
-         inicializar_traza();
-         while (number_delayed[traza] < K)
-         {  
-            temporizacion();  
-            if (clock == event_list.getA())
-            {
-                //orden.add("llegada_pasajero();");
-                ordenclock.add(clock);
-                llegada_pasajero();
-            
-            }else if( clock == event_list.getL()){
-                
-                //orden.add("llegada_ascensor();");
-               ordenclock.add(clock);
-                llegada_ascensor();
-                
-            }else if (clock == event_list.getS()){
-                //orden.add("salida_ascensor();");
-                ordenclock.add(clock);
-                
-                salida_ascensor();
-                
-            }else{
-                //orden.add("fin_reflexion();");
-               ordenclock.add(clock);
-                fin_reflexion();
-                
-            }
-
-         }
-         procesar_resultados();
-         visualizar_resultados();
-        
-     }
-     public int mean_of(int[] a){
+    
+     public double mean_of(int[] a){
          int total=0;
          for (int i =0; i< a.length; i++)
          {
@@ -819,47 +791,88 @@ public class Main {
          }
          return total/a.length;
      }
+     public double variance_of(int[] valores, int size, double mean)
+     {
+        double acum = 0;
+        int i;
+        for (i=0; i<size; i++) acum += Math.pow((double)(valores[i]-mean),2);
+        return acum/(size-1);
+     }
+    
      public void procesar_resultados()
      {
-        mean_waiting_time[traza] = total_delayed[traza]/K;   
+   
+        double media = mean_of(mean_waiting_time); /* media de todas las trazas */
+        double var = variance_of(mean_waiting_time,TOTAL_TRAZAS,media);
+        double ic = 1.96 * Math.pow(var / TOTAL_TRAZAS, 0.5f);
+       System.out.println((int)media); 
+        System.out.println("var: " + var);
+        System.out.println("intervalo confianza: " + ic);
      }
-     public void visualizar_resultados()
-     {
-        /* for (int i = 0; i< orden.size();i++){
-             //System.out.println(orden.get(i));
-         }*/
- 
-        //System.out.println("total delayed: " + total_delayed[traza]);
-        // //System.out.println( mean_waiting_time[traza]);
-         
-         
+  public void traza()
+     {    
+         inicializar_traza();
+         while (number_delayed[traza] < K)
+         {  
+            temporizacion();  
+            if ( cota_transitorio == K) transitorio = true;
+            if (clock == event_list.getA())
+            {
+                llegada_pasajero();           
+            }else if( clock == event_list.getL()){              
+                llegada_ascensor();              
+            }else if (clock == event_list.getS()){
+                salida_ascensor();      
+            }else{
+                fin_reflexion();   
+            }
+            
+         } 
+         mean_waiting_time[traza] = total_delayed[traza]/K; 
+         //System.out.println(mean_waiting_time[traza]); 
      }
      public void principal() throws InterruptedException
      {
-         for (int i = 0; i< TOTAL_TRAZAS; i++)
-         {
-             traza();
-             System.out.println(+mean_waiting_time[traza]);
-            
-             traza++;
-             
-         }
-         System.out.println("LA MEDIA TOTAL ES: "+mean_of(mean_waiting_time));
+     if (calculo_transitorio)
+     {
+        for (int j = 1; j <50; j++)
+        {
+           traza = 0;
+           K = j;
+           for (int i = 0; i< TOTAL_TRAZAS; i++)
+           {
+               traza();
+               traza++;      
+           }
+           procesar_resultados();
+           //lambda += 0.01;
+        }
+     }else{
+         
+        for (int i = 0; i< TOTAL_TRAZAS; i++)
+        {
+            traza();
+            traza++;      
+        }
+        procesar_resultados();
      }
 
+     }
      public static void main(String[] args) throws InterruptedException {
 
         // TODO code application logic here         ¡
-         Main m = new Main();
-         m.principal();
-         //m.test();
+        Main m = new Main();
+        m.principal();
         //m.prueba();
-       //m.traza();
-        // m.inicializar();
-         //m.prueba();
-
+    
     }
+     
+    public void prueba()
+     {
+        
+     }
 /*
+ *
  * POSIBLES CASOS QUE TENEMOS EN CUENTA:
  * Si un pasajero termina su tiempo de reflexion
  * se encuentra con ascensor en su planta, pero con dirección distinta, sin nadie dentro pero
