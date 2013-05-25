@@ -29,12 +29,12 @@ public class Main {
     
     /* variables constantes del programa */
     private static final int alturaPiso = 21; // altura de un piso metros
-    private static final float velAscensor = 3; // velocidad del ascensor metros/segundos
+    private static final int velAscensor = 3; // velocidad del ascensor metros/segundos
     
-    private static final float Tviaje = alturaPiso/velAscensor; // tempo de viaje
-    private static final float Tabrir = (float) 1.4; ; // tiempo abre puertas ascensor
-    private static final float Tcerrar = (float) 3.1; // tiempo cerrar puertas ascensor
-    private static final float Tin_out = (float) 2; // tiempo de espera en cada planta para que salga y entre gente
+    private static final int Tviaje = alturaPiso/velAscensor; // tempo de viaje
+    private static final int Tabrir = 1;  // tiempo abre puertas ascensor
+    private static final int Tcerrar =  3; // tiempo cerrar puertas ascensor
+    private static final int Tin_out =  2; // tiempo de espera en cada planta para que salga y entre gente
     
     private static final int MAX_PASAJEROS = 10; // ocupación total del ascensor
     private static final int MAX_PISOS = 5; // número de pisos edificio
@@ -61,9 +61,9 @@ public class Main {
     private Ascensor ascensor;    
     private Event_list event_list = new Event_list();
       
-    private float clock;   
+    private int clock;   
     private int number_delayed;
-    private float time_of_last_arrival; // instante de la última llegada pasajero
+    private int time_of_last_arrival; // instante de la última llegada pasajero
     private float area_under_q; // área del número de pasajeros en espera acumulada (area under Q(t))
     
     /* variables mias para probar, se tienen que eliminar */
@@ -99,20 +99,19 @@ public class Main {
         return r;
      }
     /* distribucion Poisson con lambda = 1/lambda para la llegada de pasajeros al edificio */
-    private float GA()
+    private int GA()
     {
        /* exponential = new ExponentialDistribution(0.016);
         //System.out.println(Math.round(exponential.sample() * 1000));
         return (float) (exponential.sample()*1000);*/
         
-        return (float) (-Math.log(1- randomIntervalDouble(0,1)) / 10);
-                //-log(1-randt(segmento))/lambda;
+        return  (int) (-Math.log(1- randomIntervalDouble(0,1)) / 0.016);
     }
     /* distribucion Weibull para el tiempo de reflexión de los pasajeros */
-    private float GR()
+    private int GR()
     {
        weibull = new WeibullDistribution(2, 22);
-       return (float) weibull.sample();
+       return (int) weibull.sample();
     }
     private int randomInterval(int a, int b){
         GNA g = new GNA();
@@ -532,7 +531,7 @@ public class Main {
          if (piso_destino == piso_actual ){
            System.out.println(" salida_ascensor - ME QUEDO EN ESTA PLANTA ");
            /* !!! si nadie me llama me quedo en la planta, pero cuando vuelvo a comprobar que alguien me llama? */
-           event_list.setS((float) (clock + 0.4));
+           event_list.setS((clock + 1));
            
         }else{
           /* actualizamos el estado del ascensor para que nadie más entre */
@@ -831,7 +830,7 @@ public class Main {
    
        
         ExponentialDistribution exp = new ExponentialDistribution(0.016);
-        for (int i = 1; i<= 200;i++)
+        for (int i = 0; i< 50;i++)
         {
    
            // System.out.println(determinarPisoProbabilidad(5) + "\n");

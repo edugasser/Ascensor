@@ -10,43 +10,43 @@ package ascensor;
  */
 public class Event_list {
 
-    private float a;
-    private float l;
-    private float s;
-    private float r;
+    private int a;
+    private int l;
+    private int s;
+    private int r;
 
     public Event_list() {
     }
 
-    public float getR() {
+    public int getR() {
         return r;
     }
 
-    public float getA() {
+    public int getA() {
         return a;
     }
 
-    public float getS() {
+    public int getS() {
         return s;
     }
 
-    public float getL() {
+    public int getL() {
         return l;
     }
 
-    public void setA(float d) {
+    public void setA(int d) {
         a = d;
     }
 
-    public void setR(float d) {
+    public void setR(int d) {
         r = d;
     }
 
-    public void setS(float d) {
+    public void setS(int d) {
         s = d;
     }
 
-    public void setL(float d) {
+    public void setL(int d) {
         l = d;
     }
 }
