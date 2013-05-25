@@ -14,9 +14,9 @@ public class Pasajero implements Cloneable{
     private String direccion;
     private int piso_actual;
     private int piso_destino;
-    private float tiempo_reflexion;
-    private float instante_llegada;
-    private float fin_espera=0;
+    private int tiempo_reflexion;
+    private int instante_llegada;
+    private int fin_espera=0;
     // Constructor 
 
     public Pasajero() {
@@ -26,27 +26,28 @@ public class Pasajero implements Cloneable{
         tiempo_reflexion = 0;
     }
 
-    public Pasajero(String d, int destino,float id) {
+    public Pasajero(String d, int destino,int id) {
         this.direccion = d;
         this.piso_actual = 0;
         this.piso_destino = destino;
         this.instante_llegada = id;
     }
 
-    public Pasajero(String d, int actual, int destino) {
+    /*comprobar que no se use
+     * public Pasajero(String d, int actual, int destino) {
         this.direccion = d;
         this.piso_actual = actual;
         this.piso_destino = destino;
-    }
-    public void setFinEspera(float f)
+    }*/
+    public void setFinEspera(int f)
     {
         fin_espera = f;
     }
-    public float getTiempoEspera()
+    public int getTiempoEspera()
     {
         return fin_espera-instante_llegada;
     } 
-    public float getTiempoEntrada()
+    public int getTiempoEntrada()
     {
         return instante_llegada;
     }
@@ -66,7 +67,7 @@ public class Pasajero implements Cloneable{
         return tiempo_reflexion;
     }
 
-    public void setTiempoReflexion(float t) {
+    public void setTiempoReflexion(int t) {
         tiempo_reflexion = t;
     }
 
