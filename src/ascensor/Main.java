@@ -67,6 +67,7 @@ public class Main {
     private float area_under_q; // área del número de pasajeros en espera acumulada (area under Q(t))
     
     /* variables mias para probar, se tienen que eliminar */
+    private float total_delayed=0;
     private ArrayList orden = new ArrayList<>();
     private ArrayList ordenclock = new ArrayList<>();
     private ArrayList tiempo_espera = new ArrayList<>();
@@ -90,18 +91,22 @@ public class Main {
      /* generar piso diferente al actual al que irá el pasajero */
      public int determinar_piso(int p)
      {
+        
         int r = randomInterval(1,MAX_PISOS);
         while (p == r){
          r = randomInterval(1,MAX_PISOS);  
         }
         return r;
      }
-    /* distribucion Poisson con lambda = 1/50 para la llegada de pasajeros al edificio */
+    /* distribucion Poisson con lambda = 1/lambda para la llegada de pasajeros al edificio */
     private float GA()
     {
-        exponential = new ExponentialDistribution(0.02);
+       /* exponential = new ExponentialDistribution(0.016);
         //System.out.println(Math.round(exponential.sample() * 1000));
-        return (float) (exponential.sample() * 1000);
+        return (float) (exponential.sample()*1000);*/
+        
+        return (float) (-Math.log(1- randomIntervalDouble(0,1)) / 10);
+                //-log(1-randt(segmento))/lambda;
     }
     /* distribucion Weibull para el tiempo de reflexión de los pasajeros */
     private float GR()
@@ -113,6 +118,11 @@ public class Main {
         GNA g = new GNA();
         // por transformada inversa
         return (int)((b-a)*g.rand2(SEMILLA-4)+a);
+    }
+    private double randomIntervalDouble(int a, int b){
+        GNA g = new GNA();
+        // por transformada inversa
+        return ((b-a)*g.rand2(SEMILLA-4)+a);
     }
     private int determinarPisoProbabilidad(int p){
         int resultado = 0;
@@ -207,7 +217,7 @@ public class Main {
                 /* sacamos al pasajero de la cola de reflexion */
                 removePasajeroFinReflexion();
                 /* se genera tiempo salida_ascensor */
-                event_list.setS(clock + GA());  
+                event_list.setS(clock + Tin_out);  
                 internas[piso_destino_pasajero] = 1; // actualizamos botonera interna
                 
                 
@@ -262,7 +272,7 @@ public class Main {
             number_delayed++;
 
             /* se genera tiempo salida_ascensor */
-            event_list.setS(clock + Tin_out);  
+            event_list.setS(clock + GA());  
             
             /* actualizamos botonera interna */
             internas[piso_destino_pasajero] = 1; 
@@ -446,7 +456,10 @@ public class Main {
             if (piso_actual==0){
                 getColaActual().get(piso_actual).frente().setFinEspera(clock);
                 tiempo_espera.add( getColaActual().get(piso_actual).frente().getTiempoEspera());
-                System.out.println(" TIEMPO_LLEGADA: "+ getColaActual().get(piso_actual).frente().getTiempoEntrada() +" HE ESPERADO : "+ getColaActual().get(piso_actual).frente().getTiempoEspera());
+                System.out.println(" TIEMPO_LLEGADA: "+ getColaActual().get(piso_actual).frente().getTiempoEntrada() +"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%HE ESPERADO : "+ getColaActual().get(piso_actual).frente().getTiempoEspera());
+                
+                total_delayed += clock - getColaActual().get(piso_actual).frente().getTiempoEntrada();
+                System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$TOTAL DELAYED:" + total_delayed);
             } // no hace falta, es para comprabar una cosa
              
             internas[getColaActual().get(piso_actual).frente().getPisoDestino()] = 1;
@@ -653,37 +666,37 @@ public class Main {
 		} else if (estado  && (pre(subida) || pre(bajada))) {
 			baja();
              */
-            System.out.println("NO HAY LLAMADAS INTERNTAS");
+            System.out.println("  NO HAY LLAMADAS INTERNTAS");
             if (ascensor.getDireccion().equals("ASC") && (hay_sig_piso(piso_actual,subidas) || hay_sig_piso(piso_actual,bajadas))){
-                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%1");
+               // System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%1");
                 if (hay_sig_piso(piso_actual,subidas)){
                     next = sig_piso(piso_actual,subidas);
                 }else{
                     next = sig_piso(piso_actual,bajadas);
                 }
             }else if (ascensor.getDireccion().equals("DESC") && (hay_ant_piso(piso_actual,subidas) || hay_ant_piso(piso_actual,bajadas))){
-               System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%2");
+              // System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%2");
                 if (hay_ant_piso(piso_actual,bajadas)){
                     next = ant_piso(piso_actual,bajadas);
                 }else{
                     next = ant_piso(piso_actual,subidas);
                 } 
             }else if(ascensor.getDireccion().equals("DESC") && (hay_sig_piso(piso_actual,subidas) || hay_sig_piso(piso_actual,bajadas))){
-                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%3");
+               // System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%3");
                 if (hay_sig_piso(piso_actual,subidas)){
                     next = sig_piso(piso_actual,bajadas);
                 }else{
                     next = sig_piso(piso_actual,subidas);
                 }
             }else if(ascensor.getDireccion().equals("ASC") && (hay_ant_piso(piso_actual,subidas) || hay_ant_piso(piso_actual,bajadas))){
-                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%4");
+                //System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%4");
                 if (hay_ant_piso(piso_actual,bajadas)){
                     next = ant_piso(piso_actual,bajadas);
                     ascensor.setDireccion("DESC");
                 }else{
                     next = ant_piso(piso_actual,subidas);
                 } 
-                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%% "+ next);
+                //System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%% "+ next);
             }else{
                 next = piso_actual;
             }
@@ -752,10 +765,10 @@ public class Main {
      public void principal()
      {    
          inicializar();
-         while (number_delayed < 250)
+         while (number_delayed < 50)
          {  
             temporizacion();
-            
+            //System.out.println("clock "+ clock);
             if (clock == event_list.getA())
             {
                 orden.add("llegada_pasajero();");
@@ -786,9 +799,9 @@ public class Main {
      }
      public void visualizar_resultados()
      {
-         for (int i = 0; i< orden.size();i++){
+         /*for (int i = 0; i< orden.size();i++){
              System.out.println(orden.get(i));
-         }
+         }*/
          System.out.println("area de espera acumulada: "+ area_under_q);
          System.out.println("tiempo medio de espera acumulado: "+ area_under_q/100);
         // System.out.println("tiempo medio de espera acumulado: "+ area_under_q/clock);
@@ -798,6 +811,8 @@ public class Main {
              //System.out.println(b);
          }
          System.out.println("tiempo medio de espera acumulado: "+ b/tiempo_espera.size());
+         System.out.println("total delayed: " + total_delayed);
+         System.out.println("media total delayed: " + total_delayed/5);
           /*for (int i = 0; i< ordenclock.size();i++){
              System.out.println(ordenclock.get(i));
          }*/
@@ -816,7 +831,7 @@ public class Main {
    
        
         ExponentialDistribution exp = new ExponentialDistribution(0.016);
-        for (int i = 1; i<= 100;i++)
+        for (int i = 1; i<= 200;i++)
         {
    
            // System.out.println(determinarPisoProbabilidad(5) + "\n");
@@ -824,43 +839,17 @@ public class Main {
            // System.out.println(poisson.sample());
           // System.out.println(Math.round(exp.sample()*1000));
           //System.out.println(randomInterval(1,6));
-          System.out.println(determinarPisoProbabilidad(1));
-           // System.out.println(GR());
+          //System.out.println(determinarPisoProbabilidad(1));
+           System.out.println(GA());
+           
+           //System.out.println(GR());
 
         }
      }
      public void test()
      {
          inicializar();
-        llegada_pasajero();
-        salida_ascensor();
-        llegada_ascensor();
-        salida_ascensor();
-        llegada_pasajero();
-        salida_ascensor();
-        llegada_ascensor();
-        salida_ascensor();
-        fin_reflexion();
-        llegada_pasajero();
-        llegada_ascensor();
-        salida_ascensor();
-        llegada_ascensor();
-        salida_ascensor();
-        fin_reflexion();
-        llegada_pasajero();
-        llegada_ascensor();
-        salida_ascensor();
-        llegada_pasajero();
-        llegada_pasajero();
-        llegada_pasajero();
-        llegada_ascensor();
-        salida_ascensor();
-        llegada_pasajero();
-        llegada_ascensor();
-        fin_reflexion();
-        salida_ascensor();
-        llegada_ascensor();
-        salida_ascensor();
+
 
      }
      public static void main(String[] args) {
@@ -868,8 +857,8 @@ public class Main {
         // TODO code application logic here         ¡
          Main m = new Main();
          //m.test();
-        //m.prueba();
-        m.principal();
+        m.prueba();
+        //m.principal();
         // m.inicializar();
          //m.prueba();
 
