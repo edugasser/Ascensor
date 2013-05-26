@@ -16,7 +16,7 @@ public class Pasajero implements Cloneable{
     private int piso_destino;
     private int tiempo_reflexion;
     private int instante_llegada;
-    private int fin_espera=0;
+
     // Constructor 
 
     public Pasajero() {
@@ -39,14 +39,7 @@ public class Pasajero implements Cloneable{
         this.piso_actual = actual;
         this.piso_destino = destino;
     }*/
-    public void setFinEspera(int f)
-    {
-        fin_espera = f;
-    }
-    public int getTiempoEspera()
-    {
-        return fin_espera-instante_llegada;
-    } 
+
     public int getTiempoEntrada()
     {
         return instante_llegada;
