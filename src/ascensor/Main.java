@@ -33,8 +33,8 @@ public class Main {
     private static final int MAX_PASAJEROS = 10; // ocupación total del ascensor
     private static final int MAX_PISOS = 5; // número de pisos edificio
     private static final int INFINITO = Integer.MAX_VALUE;
-    private static int K = 80; // número de clientes retardados
-    private static final int TOTAL_TRAZAS = 3;
+    private static int K = 90; // número de clientes retardados
+    private static final int TOTAL_TRAZAS = 100;
     private static final int SEMILLA = 14;
     
     /* VARIABLES DEL ASCENSOR */
@@ -649,19 +649,18 @@ public class Main {
         }else{   
             tstudent = Math.abs(t.inverseCumulativeProbability(0.025)); //no funciona bien.   
         }
-        double ic = tstudent * Math.pow(varianza / TOTAL_TRAZAS, 0.5f);
+        double ic = tstudent * Math.sqrt(varianza / TOTAL_TRAZAS);
         double error = ic / media;
 
         if (error <= (0.1/(0.1 + 1))){
-            System.out.println((int)media);
+           
             e.add(error);
             c.add(ic);
-            /*System.out.println("media:" + media);
-            System.out.println("var: " + varianza);
-            System.out.println("Tstudent: " + tstudent);
-            System.out.println("intervalo confianza: " + ic);
-            System.out.println("error relativo: " + error);
-            System.out.println("error aceptable: " + (0.1/(0.1 + 1)));*/
+            System.out.println((int)media);
+           // System.out.println("var: " + varianza);
+            //System.out.println("Tstudent: " + tstudent);
+            //System.out.println("intervalo confianza: " + ic);
+           // System.out.println("error relativo: " + error);
         }
         
         return error <= (0.1/(0.1 + 1));
@@ -754,8 +753,8 @@ public class Main {
 
         // TODO code application logic here         ¡
         Main m = new Main();
-        m.principal();
-       // m.media_sin_transitorio();
+       m.principal();
+      // m.media_sin_transitorio();
        
        // m.prueba();
     }
