@@ -11,7 +11,6 @@ package ascensor;
 public class Pasajero implements Cloneable{
     // Declaración de atributos 
 
-    private String direccion;
     private int piso_actual;
     private int piso_destino;
     private int tiempo_reflexion;
@@ -20,25 +19,19 @@ public class Pasajero implements Cloneable{
     // Constructor 
 
     public Pasajero() {
-        this.direccion = "ASC";
+
         this.piso_actual = 0;
         this.piso_destino = 0;
         tiempo_reflexion = 0;
     }
 
     public Pasajero(String d, int destino,int id) {
-        this.direccion = d;
+
         this.piso_actual = 0;
         this.piso_destino = destino;
         this.instante_llegada = id;
     }
 
-    /*comprobar que no se use
-     * public Pasajero(String d, int actual, int destino) {
-        this.direccion = d;
-        this.piso_actual = actual;
-        this.piso_destino = destino;
-    }*/
 
     public int getTiempoEntrada()
     {

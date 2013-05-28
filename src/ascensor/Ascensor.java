@@ -46,8 +46,6 @@ public class Ascensor {
         return viajando;
     }
 
-
-
     public ArrayList<Pasajero> getPasajeros() {
         /* devolvemos la lista de los pasajeros del ascensor dependiendo de su dirección */
 
@@ -74,31 +72,8 @@ public class Ascensor {
     public int getProximaParada() {
         return proxima_parada;
     }
-    /* public int actualizarPisoAscensor()
-     {
-     piso_actual = piso_destino;
-     return piso_actual;
-     }
-     public void setPisoDestino(int p)
-     {
-     this.piso_destino = p;
-     }
-    
-     public void setPisoActual(int p)
-     {
-     this.piso_actual = p;
-     }
-     public int getPisoActual()
-     {
-     return this.piso_actual;
-     }*/
-
     public int getNumPasajeros() {
-        //System.out.println("NUM PASAJEROS SUBEN DENTRO ASCENSOR: " + suben.size());
-        // System.out.println("NUM PASAJEROS BAJAN DENTRO ASCENSOR: "+ bajan.size());
-
         return Math.max(suben.size(), bajan.size());
-
     }
 
     public void setDireccion(String d) {
