@@ -33,8 +33,8 @@ public class Main {
     private static final int MAX_PASAJEROS = 10; // ocupación total del ascensor
     private static final int MAX_PISOS = 5; // número de pisos edificio
     private static final int INFINITO = Integer.MAX_VALUE;
-    private static int K = 90; // número de clientes retardados
-    private static final int TOTAL_TRAZAS = 100;
+    private static int K = 100; // número de clientes retardados
+    private static final int TOTAL_TRAZAS = 300;
     private static final int SEMILLA = 14;
     
     /* VARIABLES DEL ASCENSOR */
@@ -60,7 +60,7 @@ public class Main {
     private int[] total_delayed = new int[TOTAL_TRAZAS];
     private int[] number_delayed = new int[TOTAL_TRAZAS];
     private int[] mean_waiting_time = new int[TOTAL_TRAZAS];
-    private boolean transitorio;
+ 
     private static final int cota_transitorio = 21;
     private double lambda = 0.016; // 1/60
     private boolean aceptable;
@@ -80,7 +80,7 @@ public class Main {
         piso_destino=0;
         number_delayed[traza]=0;
         total_delayed[traza]=0;
-        transitorio = true;
+       
         mean_waiting_time[traza]=0;
         for (int i = 0; i<MAX_PISOS; i++){
             cola_subida.get(i).clear();
@@ -98,11 +98,11 @@ public class Main {
         }
          
      }
-     /* generar piso diferente al actual al que irá el pasajero */
-     public int determinar_piso(int p)
+     /* determinar piso de manera equiprobable desde la planta cero*/
+     public int determinar_piso()
      {      
         int r = randomInterval(1,MAX_PISOS-1);
-        while (p == r){
+        while (0 == r){
          r = randomInterval(1,MAX_PISOS-1);  
         }
         
@@ -139,8 +139,6 @@ public class Main {
     private int determinarPisoProbabilidad(int p){
         int resultado = 0;
 
-        
-        
         if ( g.rand2(SEMILLA) < 0.6 ){
             resultado = randomInterval(1,MAX_PISOS-1);
             while (resultado == p){
@@ -194,7 +192,7 @@ public class Main {
   /* rutina de fin tiempo reflexión pasajero en la planta*/
   public void fin_reflexion()
      {    
-        //System.out.println("     FIN REFLEXIÓN PASAJERO clock: " + clock);
+    
          /* obtengo piso actual del pasajero */
          int piso_actual_pasajero = getPasajeroFinReflexion().getPisoActual();
          /* determino piso al que irá el pasajero */
@@ -216,43 +214,26 @@ public class Main {
                 /* se genera tiempo salida_ascensor */
                 event_list.setS(clock + Tin_out);  
                 internas[piso_destino_pasajero] = 1; // actualizamos botonera interna
-                      
-                mostrar_botonera(internas, "INTERNA");
-                mostrar_botonera(subidas,"SUBIDAS");
-                mostrar_botonera(bajadas,"BAJADAS");
-     
-               //System.out.println(" sube al ascensor - Piso actual:" + piso_actual_pasajero +" piso destino: " + piso_destino_pasajero + " genera salida_ascensor t: " + event_list.getS() + " clock:"  + clock);
-               //System.out.println(" DIRECCION ASCENSOR: " + ascensor.getDireccion() + " DIRECCION PASAJERO: " + direc);
           }else{
-             
-              //System.out.println(" El ascensor esta en el mismo piso pero tiene diferente direccion o ya ha salido");
-              //System.out.println(" DIRECCION ASCENSOR: " + ascensor.getDireccion() + " DIRECCION PASAJERO: " + direc);
-              //System.out.println(" Piso actual:" + piso_actual_pasajero +" Piso destino: " + piso_destino_pasajero + " | salida_ascensor t: " + event_list.getS());               
-                
                 if (direc.equals("ASC")){
                     cola_subida.get(piso_actual_pasajero).add(getPasajeroFinReflexion());
                     removePasajeroFinReflexion();
                     subidas[piso_actual_pasajero] = 1; // actualizamos botonera subida en planta baja
-  
                 }else{
                     cola_bajada.get(piso_actual_pasajero).add(getPasajeroFinReflexion());
                     removePasajeroFinReflexion();
                     bajadas[piso_actual_pasajero] = 1; // actualizamos botonera subida en planta baja
                  }
-                mostrar_botonera(internas, "INTERNAS");
-                mostrar_botonera(subidas, "SUBIDAS");
-                mostrar_botonera(bajadas, "BAJADAS");    
          }
          mostrar_pasajeros_actuales(); 
          event_list.setR(INFINITO);
-        //System.out.println(" proxima salida_ascensor t: " + event_list.getS());
-        //System.out.println(" ///////////////////////////////////////");
      }
      /* rutina de llegada pasajero al edificio */
      public void llegada_pasajero()
      {    
+  
          /* determino piso al que irá el pasajero */
-         int piso_destino_pasajero = determinar_piso(0);
+         int piso_destino_pasajero = determinar_piso();
         
          /* si ascensor está en el piso actual, está en reposo y hay menos de 10 personas en el */
          if (piso_actual == 0 && !ascensor.getViajando() && ascensor.getNumPasajeros() < MAX_PASAJEROS){   
@@ -263,17 +244,13 @@ public class Main {
             event_list.setS(clock + GA());  
             /* actualizamos botonera interna */
             internas[piso_destino_pasajero] = 1; 
-            //System.out.println(" PASAJERO SUBE - genera salida_ascensor t: " + event_list.getS() + " PISO DESTINO: " + piso_destino_pasajero+" clock:"  + clock + " number_delayed: "+ number_delayed[traza]);
          }else{ // el ascensor está en otro piso o se acaba de ir 
             /* ponemos al pasajero en la cola : number_in_queue++ */
             cola_subida.get(0).add( new Pasajero("ASC", piso_destino_pasajero,clock) );
-            subidas[0] = 1; // actualizamos botonera subida en planta baja
-            //System.out.println("llegada_pasajeros - el ascensor no está - clock: " +  clock);   
+            subidas[0] = 1; // actualizamos botonera subida en planta baja  
          }
          /* se genera el tiempo de llegada del pasajero al edificio */
          event_list.setA(clock + GA());    
-        //System.out.println(" proxima llegada_pasajero t: " + event_list.getA()  + " number_delayed: "  + number_delayed[traza]);
-        //System.out.println(" ///////////////////////////////////////");
      }
      /* rutina de llegada ascensor a la planta */
      public void llegada_ascensor()
@@ -384,14 +361,21 @@ public class Main {
          }
      }
      
+     public boolean transitorio()
+     {
+        return (cota_transitorio <= number_delayed[traza]);
+     }
+     
      public void aceptar_pasajeros ()
      {
          /* cola_subida.get(piso_actual).size() mientras haya gente que subir y sean menos de 10 personas en el ascensor */
          while (ascensor.getNumPasajeros() < MAX_PASAJEROS && getColaActual().get(piso_actual).size()  > 0 )
          {
            /* si recogemos a pasajeros de la planta baja, calculamos el tiempo de espera de ese pasajero && !transitorio */
-            if (piso_actual==0 && !transitorio){
+
+            if (piso_actual==0 && transitorio()){
                 total_delayed[traza] += clock - getColaActual().get(piso_actual).frente().getTiempoEntrada();
+
             }
             internas[getColaActual().get(piso_actual).frente().getPisoDestino()] = 1;
             ascensor.getPasajeros().add(getColaActual().get(piso_actual).frente());    
@@ -438,11 +422,9 @@ public class Main {
      }
      public void salida_ascensor()
      {
+
          if (ascensor.getNumPasajeros() < MAX_PASAJEROS) aceptar_pasajeros();
          piso_destino = proxima_parada();
-         mostrar_botonera(internas, "INTERNAS");  
-         mostrar_botonera(subidas, "SUBIDAS");
-         mostrar_botonera(bajadas, "BAJADAS"); 
          if (piso_destino == piso_actual ){
            event_list.setS((clock + 3));
         }else{
@@ -462,9 +444,7 @@ public class Main {
           * por que puede que haya alguna llamada porque ya no entran más pasajeros
           */
          if (t) i = p+1;
-
          boolean salir = false;
-         
          while (i < MAX_PISOS && !salir){
              if (b[i] == 1) salir = true;
              i++;
@@ -635,8 +615,6 @@ public class Main {
         for (i=0; i<size; i++) acum += Math.pow((double)(valores[i]-mean),2);
         return acum/(size-1);
      }
-     public ArrayList c = new ArrayList<>();
-     public ArrayList e = new ArrayList<>();
      public boolean procesar_resultados()
      {
         TDistribution t = new TDistribution(TOTAL_TRAZAS);
@@ -653,26 +631,22 @@ public class Main {
         double error = ic / media;
 
         if (error <= (0.1/(0.1 + 1))){
-           
-            e.add(error);
-            c.add(ic);
             System.out.println((int)media);
            // System.out.println("var: " + varianza);
             //System.out.println("Tstudent: " + tstudent);
             //System.out.println("intervalo confianza: " + ic);
-           // System.out.println("error relativo: " + error);
+           //System.out.println("error relativo: " + error);
         }
         
         return error <= (0.1/(0.1 + 1));
      }
-  public void traza()
+     public void traza()
      {    
          inicializar_traza();
          while (number_delayed[traza] < K)
          {  
             temporizacion();  
-           
-            if (cota_transitorio == number_delayed[traza]) transitorio = false;
+
             if (clock == event_list.getA())
             {
                 llegada_pasajero();           
@@ -685,7 +659,9 @@ public class Main {
             }
             
          } 
+          
          mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]-cota_transitorio); 
+         
      }
     public void conseguir_transitorio()
     {
@@ -739,24 +715,15 @@ public class Main {
             }
             lambda += 0.01;     
         }
-      for (int i = 0; i< c.size(); i++)
-      {
-          System.out.println(c.get(i));
-      }
-      System.out.println(" ");
-     for (int i = 0; i< e.size(); i++)
-      {
-          System.out.println(e.get(i));
-      }
+        
      }
      public static void main(String[] args) {
 
         // TODO code application logic here         ¡
         Main m = new Main();
-       m.principal();
-      // m.media_sin_transitorio();
-       
-       // m.prueba();
+        m.principal();
+    // m.media_sin_transitorio();
+
     }
 
 }
