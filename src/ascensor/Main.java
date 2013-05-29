@@ -637,8 +637,8 @@ public class Main {
             e.add(error);
            // //System.out.println("var: " + varianza);
             ////System.out.println("Tstudent: " + tstudent);
-            ////System.out.println("intervalo confianza: " + ic);
-           ////System.out.println("error relativo: " + error);
+            System.out.println("intervalo confianza: " + ic);
+           System.out.println("error relativo: " + error);
         }
         
         return error <= (0.1/(0.1 + 1));
@@ -665,8 +665,7 @@ public class Main {
          } 
           
          mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]-cota_transitorio); 
-        // mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]);
-       // System.out.println(mean_waiting_time[traza] + " K "+ K);
+
          
      }
     public void conseguir_transitorio()
@@ -707,7 +706,7 @@ public class Main {
     {
         inicializar_colas(); 
         // evolucion del tiempo medio segun lambda creciente;
-        for (int j = 1; j <100; j++){
+        for (int j = 1; j <98; j++){
             aceptable = false;
             while (!aceptable)
             {
@@ -731,8 +730,8 @@ public class Main {
 
         // TODO code application logic here         ¡
         Main m = new Main();
-        m.principal();
-    // m.media_sin_transitorio();
+        //m.principal();
+     m.media_sin_transitorio();
        // m.conseguir_transitorio();
 
     }
