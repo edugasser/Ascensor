@@ -422,20 +422,19 @@ public class Main {
      }
      public void salida_ascensor()
      {
-
-         if (ascensor.getNumPasajeros() < MAX_PASAJEROS) aceptar_pasajeros();
-         piso_destino = proxima_parada();
-         if (piso_destino == piso_actual ){
-           event_list.setS((clock + 3));
-        }else{
-          /* actualizamos el estado del ascensor para que nadie más entre */
-          ascensor.setViajando(true);  
-          /* se genera el tiempo de llegada del ascensor al otro piso */
-          event_list.setL(clock + Tviaje + (piso_destino - piso_actual) + Tcerrar + Tabrir);
-          event_list.setS(INFINITO);
-       }       
-         mostrar_pasajeros_actuales();
-     }
+        if (ascensor.getNumPasajeros() < MAX_PASAJEROS) aceptar_pasajeros();
+            piso_destino = proxima_parada();
+            if (piso_destino == piso_actual ){
+                event_list.setS((clock + 3));
+            }else{
+                /* actualizamos el estado del ascensor para que nadie más entre */
+                ascensor.setViajando(true);  
+                /* se genera el tiempo de llegada del ascensor al otro piso */
+                event_list.setL(clock + Tviaje + (piso_destino - piso_actual) + Tcerrar + Tabrir);
+                event_list.setS(INFINITO);
+            }       
+             mostrar_pasajeros_actuales();
+        }
      
      public int sig_piso(int p, int b[],boolean t)
      {
