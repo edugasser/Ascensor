@@ -24,8 +24,8 @@ import org.apache.commons.math3.stat.descriptive.moment.Variance;
 public class Main {
 
     /* VARIABLES CONSTANTES */
-    private static final int alturaPiso = 21; // altura de un piso metros
-    private static final int velAscensor = 3; // velocidad del ascensor metros/segundos
+    private static final int alturaPiso = 3; // altura de un piso en metros
+    private static final int velAscensor = 1; // velocidad del ascensor metros/segundos
     private static final int Tviaje = alturaPiso/velAscensor; // tempo de viaje
     private static final int Tabrir = 1;  // tiempo abre puertas ascensor
     private static final int Tcerrar =  3; // tiempo cerrar puertas ascensor
@@ -33,7 +33,7 @@ public class Main {
     private static final int MAX_PASAJEROS = 10; // ocupación total del ascensor
     private static final int MAX_PISOS = 5; // número de pisos edificio
     private static final int INFINITO = Integer.MAX_VALUE;
-    private static int K = 100; // número de clientes retardados
+    private static int K = 200; // número de clientes retardados
     private static final int TOTAL_TRAZAS = 300;
     private static final int SEMILLA = 14;
     
@@ -361,8 +361,8 @@ public class Main {
      
      public boolean transitorio()
      {
-        return (cota_transitorio <= number_delayed[traza]);
-         
+      return (cota_transitorio <= number_delayed[traza]);
+        
      }
      
      public void aceptar_pasajeros ()
@@ -631,18 +631,16 @@ public class Main {
         }
         double ic = tstudent * Math.sqrt(varianza / TOTAL_TRAZAS);
         double error = ic / media;
-   
+        
         if (error <= (0.1/(0.1 + 1))){
             System.out.println((int)media);
-            e.add(error);
-           // //System.out.println("var: " + varianza);
-            ////System.out.println("Tstudent: " + tstudent);
-            System.out.println("intervalo confianza: " + ic);
-           System.out.println("error relativo: " + error);
+            //System.out.println("var: " + varianza);
+            //System.out.println("Tstudent: " + tstudent);
+            // System.out.println("intervalo confianza: " + ic);
+            // System.out.println("error relativo: " + error);
         }
         
         return error <= (0.1/(0.1 + 1));
-     
      }
      public void traza()
      {    
@@ -664,9 +662,8 @@ public class Main {
             
          } 
           
-         mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]-cota_transitorio); 
+        mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]-cota_transitorio); 
 
-         
      }
     public void conseguir_transitorio()
     {
@@ -730,8 +727,8 @@ public class Main {
 
         // TODO code application logic here         ¡
         Main m = new Main();
-        //m.principal();
-     m.media_sin_transitorio();
+        m.principal();
+     //m.media_sin_transitorio();
        // m.conseguir_transitorio();
 
     }
