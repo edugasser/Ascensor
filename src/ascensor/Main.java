@@ -33,9 +33,9 @@ public class Main {
     private static final int MAX_PASAJEROS = 10; // ocupación total del ascensor
     private static final int MAX_PISOS = 5; // número de pisos edificio
     private static final int INFINITO = Integer.MAX_VALUE;
-    private static int K = 200; // número de clientes retardados
-    private static final int TOTAL_TRAZAS = 300;
-    private static final int SEMILLA = 14;
+    private static int K = 100; // número de clientes retardados
+    private static final int TOTAL_TRAZAS = 6;
+    private static final int SEMILLA = 15;
     
     /* VARIABLES DEL ASCENSOR */
     private ArrayList<Cola> cola_subida = new ArrayList<Cola>(); // cola de pasajeros que quieren subir
@@ -43,6 +43,7 @@ public class Main {
     private ArrayList<Pasajero> pasajeros_reflexion = new ArrayList<Pasajero>();//lista de personas en reflexion
     private Ascensor ascensor = new Ascensor();    
     private Event_list event_list = new Event_list(); //eventos
+    private int seleccion_piso[] = new int[6];
     
     /*DISTRIBUCIONES*/
     private GNA g = new GNA(); 
@@ -65,7 +66,15 @@ public class Main {
     private double lambda = 0.016; // 1/60
     private boolean aceptable;
     private int traza;
+    public  Main(){
+        seleccion_piso[0] = 1;
+        seleccion_piso[1] = 1;
+        seleccion_piso[2] = 2;
+        seleccion_piso[3] = 2;
+        seleccion_piso[4] = 3;
+        seleccion_piso[5] = 3;
 
+    }
     /* rutina de inicializacion */
     public void inicializar_traza()
     {
@@ -137,12 +146,19 @@ public class Main {
         return r;
     }
     private int determinarPisoProbabilidad(int p){
-        int resultado = 0;
-
-        if ( g.rand2(SEMILLA) < 0.6 ){
-            resultado = randomInterval(1,MAX_PISOS-1);
-            while (resultado == p){
-                resultado = randomInterval(1,MAX_PISOS-1);
+        int resultado;
+        
+        double r = g.rand2(SEMILLA);
+    
+        // si 40% piso = 0
+        if ( r > 0.5 ){
+            resultado = 0;
+        }else{
+            int indice = (int) (r*10);
+            if (seleccion_piso[indice] == p){
+                resultado = 4;
+            }else{
+                resultado = seleccion_piso[indice];
             }
         }
        return resultado;
@@ -362,6 +378,7 @@ public class Main {
      public boolean transitorio()
      {
       return (cota_transitorio <= number_delayed[traza]);
+      //return true;
         
      }
      
@@ -627,7 +644,7 @@ public class Main {
         if(TOTAL_TRAZAS > 400){
             tstudent = 1.96;
         }else{   
-            tstudent = Math.abs(t.inverseCumulativeProbability(0.025)); //no funciona bien.   
+            tstudent = Math.abs(t.inverseCumulativeProbability(0.025));  
         }
         double ic = tstudent * Math.sqrt(varianza / TOTAL_TRAZAS);
         double error = ic / media;
@@ -662,8 +679,10 @@ public class Main {
             
          } 
           
-        mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]-cota_transitorio); 
-
+       mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]-cota_transitorio); 
+         //mean_waiting_time[traza] = total_delayed[traza]/(number_delayed[traza]);
+         //System.out.println(mean_waiting_time[traza]);
+         
      }
     public void conseguir_transitorio()
     {
@@ -699,6 +718,19 @@ public class Main {
             traza = 0;
         }
     }
+    public void media_de_trazas()
+    {
+        inicializar_colas();
+        aceptable = false;
+        traza = 0;
+        for (int i = 1; i< TOTAL_TRAZAS; i++)
+        {
+            traza();
+            traza++;      
+        }
+        procesar_resultados();
+   
+    }
     public void principal()
     {
         inicializar_colas(); 
@@ -728,9 +760,19 @@ public class Main {
         // TODO code application logic here         ¡
         Main m = new Main();
         m.principal();
-     //m.media_sin_transitorio();
+        //m.media_de_trazas();
+       
+       //m.media_sin_transitorio();
        // m.conseguir_transitorio();
 
     }
+    public void prueba()
+    {
+        TDistribution t = new TDistribution(5);
+        double ts = Math.abs(t.inverseCumulativeProbability(0.025));
+        System.out.println(ts);
+    }
 
+    
+ 
 }
